@@ -29,7 +29,12 @@ bool Ship::isDestroyed() const {
 
 
 int Fleet::getWeight() const {
-    return 0;
+    vector<Ship*> ships = shipList();
+    int total = 0;
+    for (int i = 0; i < ships.size(); i++) {
+        total += ships[i]->getWeight();
+    }
+    return total;
 }
 
 int Fleet::getEnergyConsumption() const {
@@ -73,7 +78,16 @@ vector<Ship *> Fleet::colonyShips() const {
 }
 
 vector<Ship *> Fleet::shipList() const {
-    return std::vector<Ship *>();
+    vector<Ship *> list;
+    vector<Ship *> colonies = colonyShips();
+    for (int i = 0; i < colonies.size(); i++) {
+        list.push_back(colonies[i]);
+    }
+    vector<Ship *> others = otherShips;
+    for (int i = 0; i < others.size(); i++) {
+        list.push_back(others[i]);
+    }
+    return list;
 }
 
 void Fleet::destroyShip(Ship *i) {
