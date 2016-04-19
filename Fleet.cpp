@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #include "Fleet.h"
 
 using namespace std;
@@ -108,13 +109,28 @@ string Fleet::getCorporationName() const {
     return std::basic_string<char, char_traits<char>, allocator<char>>();
 }
 
+static bool compareColonist (ColonyShip lhs, ColonyShip rhs){
+    return (lhs.getColonistCount()<rhs.getColonistCount());
+}
+
 vector<Ship *> Fleet::protectedShips() const {
-    return std::vector<Ship *>();
+    vector<Ship*> colony = colonyShips();
+
+    int shipsCount = countProtectedShips();
+
+    sort(colony.begin(),colony.end(),compareColonist);
+
+    return vector<Ship *>(colony.begin(), colony.begin() + shipsCount);
 }
 
 vector<Ship *> Fleet::unprotectedShips() const {
+    vector<Ship*> colony = colonyShips();
 
-    return std::vector<Ship *>();
+    int shipsCount = countProtectedShips();
+
+    sort(colony.begin(),colony.end(),compareColonist);
+
+    return vector<Ship *>(colony.begin() + shipsCount, colony.end());
 }
 
 vector<Ship *> Fleet::colonyShips() const {

@@ -50,6 +50,7 @@ public:
     vector<Ship *> shipList() const; // Returns a vector with all ships in the fleet
     void destroyShip(Ship *i); // Removes ship i from the fleet
     void addShip(Ship *i);
+    static bool compareColonist(Fleet lhs, Fleet rhs);
 private:
     vector<Ship *> otherShips;
     vector<MilitaryEscortShip *> militaryShips;
