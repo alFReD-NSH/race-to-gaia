@@ -1,9 +1,18 @@
 #include <vector>
+#include <iostream>
 #include "Fleet.h"
 
 using namespace std;
 
 int main() {
+    Fleet fleet;
+    ColonyShip* ship = new ColonyShip();
+    fleet.addShip(ship);
+    fleet.addShip(new ColonyShip);
+
+    fleet.destroyShip(ship);
+    cout << fleet.colonyShips().size();
+
     return 0;
 }
 
@@ -38,26 +47,60 @@ int Fleet::getWeight() const {
 }
 
 int Fleet::getEnergyConsumption() const {
-    return 0;
+    vector<Ship *> ships = shipList();
+    int total = 0;
+    for(int i =0; i< ships.size();i++){
+        total += ships[i] -> getEnergyConsumption();
+    }
+    return total;
 }
 
 int Fleet::getColonistCount() const {
-    return 0;
+    vector<ColonyShip *> colonies = colonyShipList;
+    int total = 0;
+    for(int i= 0;i<colonies.size();i++){
+        total += colonies[i]->getColonistCount();
+    }
+    return total;
 }
 
 int Fleet::getCost() const {
-    return 0;
+    int totalcost = 0;
+    vector<Ship *> ships = shipList();
+    for(int i=0; i<ships.size(); i++){
+        totalcost += ships[i]->getCost();
+    }
+    return totalcost;
 }
 
 int Fleet::EnergyProduction() const {
-    return 0;
+    int totalenergy = 0;
+    vector<Ship*> ships = shipList();
+    for(int i=0; i<ships.size(); i++){
+        totalenergy += ships[i]->getEnergyConsumption();
+    }
+    return totalenergy;
 }
 
 int Fleet::countProtectedShips() const {
-    return 0;
+    vector<MilitaryEscortShip*> ships = militaryShips;
+    int totalships = 0;
+    for(int i=0; i<ships.size(); i++){
+        totalships += ships[i]->getNrProtected();
+    }
+    return totalships;
 }
 
 bool Fleet::hasMedic() const {
+    vector<Ship* > ships = shipList();
+    string temp="";
+
+    for(int i =0; i<shipList().size(); i++){
+        temp = ships[i]->getTypeName();
+        if(temp == "Medic"){
+            return true;
+        }
+    }
     return false;
 }
 
@@ -70,11 +113,22 @@ vector<Ship *> Fleet::protectedShips() const {
 }
 
 vector<Ship *> Fleet::unprotectedShips() const {
+
     return std::vector<Ship *>();
 }
 
 vector<Ship *> Fleet::colonyShips() const {
-    return std::vector<Ship *>();
+    vector<Ship* > list;
+    vector<ColonyShip* > allShip = colonyShipList;
+
+    string temp ="";
+    for(int i=0;i<allShip.size();i++){
+        //temp = allShip[i]->getTypeName();
+        //if (temp=="Ferry" || temp =="Liner" || temp =="Cloud"){
+            list.push_back(allShip[i]);
+        //}
+    }
+    return list;
 }
 
 vector<Ship *> Fleet::shipList() const {
@@ -91,7 +145,16 @@ vector<Ship *> Fleet::shipList() const {
 }
 
 void Fleet::destroyShip(Ship *i) {
+    //colonyShipList.erase(std::find(colonyShipList.begin(), colonyShipList.end(), dynamic_cast<ColonyShip*>(i)), colonyShipList.end());
+    for (auto it = colonyShipList.begin(); it != colonyShipList.end(); it++) {
+        if (*it == i) {
+            colonyShipList.erase(it);
+        }
+    }
+}
 
+void Fleet::addShip(Ship *i) {
+    colonyShipList.push_back((ColonyShip*) i);
 }
 
 
