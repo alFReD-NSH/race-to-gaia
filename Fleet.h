@@ -67,6 +67,7 @@ public:
     void addColonyShip(Ship *i);
     void addMilitaryShip(Ship *i);
     void addSolarSailShip(Ship *i);
+    bool compareColonist(ColonyShip lhs, ColonyShip rhs); // compare the colonist count between colony ships
 private:
     vector<Ship *> otherShips;
     vector<MilitaryEscortShip *> militaryShips;
@@ -74,6 +75,9 @@ private:
     vector<SolarSailShip *> solarsailShip;
 
     void addOtherShip(Ship *ship);
+    string corporationName;
+
+
 };
 
 Fleet *userInterfaceCreateFleet();

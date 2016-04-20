@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
+#include <algorithm>
 #include "Fleet.h"
 
 using namespace std;
@@ -116,16 +117,27 @@ bool Fleet::hasMedic() const {
 }
 
 string Fleet::getCorporationName() const {
-    return std::basic_string<char, char_traits<char>, allocator<char>>();
+    return corporationName;
 }
 
 vector<Ship *> Fleet::protectedShips() const {
-    return std::vector<Ship *>();
+    vector<Ship*> colony = colonyShips();
+
+    int shipsCount = countProtectedShips();
+
+    sort(colony.begin(),colony.end(),compareColonist);
+
+    return vector<Ship *>(colony.begin(), colony.begin() + shipsCount);
 }
 
 vector<Ship *> Fleet::unprotectedShips() const {
+    vector<Ship*> colony = colonyShips();
 
-    return std::vector<Ship *>();
+    int shipsCount = countProtectedShips();
+
+    sort(colony.begin(),colony.end(),compareColonist);
+
+    return vector<Ship *>(colony.begin() + shipsCount, colony.end());
 }
 
 vector<Ship *> Fleet::colonyShips() const {
@@ -209,6 +221,10 @@ void Fleet::addSolarSailShip(Ship *i) {
 
 void Fleet::addOtherShip(Ship *i) {
     otherShips.push_back(i);
+}
+
+bool Fleet::compareColonist(ColonyShip lhs, ColonyShip rhs) {
+    return (lhs.getColonistCount()<rhs.getColonistCount());
 }
 
 
