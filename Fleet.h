@@ -49,13 +49,16 @@ public:
     vector<Ship *> colonyShips() const; // Returns a vector with ship numbers of all ships that are a colony ship
     vector<Ship *> shipList() const; // Returns a vector with all ships in the fleet
     void destroyShip(Ship *i); // Removes ship i from the fleet
-    void addShip(Ship *i);
-    static bool compareColonist(Fleet lhs, Fleet rhs);
+    void addShip(Ship *i); // Add ship i to the fleet
+    bool compareColonist(ColonyShip lhs, ColonyShip rhs); // compare the colonist count between colony ships
 private:
     vector<Ship *> otherShips;
     vector<MilitaryEscortShip *> militaryShips;
     vector<ColonyShip *> colonyShipList;
     vector<SolarSailShip *> solarsailShip;
+    string corporationName;
+
+
 };
 
 Fleet *userInterfaceCreateFleet();

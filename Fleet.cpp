@@ -106,11 +106,7 @@ bool Fleet::hasMedic() const {
 }
 
 string Fleet::getCorporationName() const {
-    return std::basic_string<char, char_traits<char>, allocator<char>>();
-}
-
-static bool compareColonist (ColonyShip lhs, ColonyShip rhs){
-    return (lhs.getColonistCount()<rhs.getColonistCount());
+    return corporationName;
 }
 
 vector<Ship *> Fleet::protectedShips() const {
@@ -171,6 +167,10 @@ void Fleet::destroyShip(Ship *i) {
 
 void Fleet::addShip(Ship *i) {
     colonyShipList.push_back((ColonyShip*) i);
+}
+
+bool Fleet::compareColonist(ColonyShip lhs, ColonyShip rhs) {
+    return (lhs.getColonistCount()<rhs.getColonistCount());
 }
 
 
