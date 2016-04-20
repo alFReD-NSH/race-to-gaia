@@ -8,17 +8,49 @@ using namespace std;
 
 class Ship {
 public:
+    Ship(const string type) : type(type) { }
+    static bool isSupported(string type);
     int getEnergyConsumption() const; // Returns energy consumption of a ship
     int getWeight() const; // Returns weight of a ship
     int getCost() const; // Returns cost of a ship
     string getTypeName() const; // Returns the ship type, e.g. Ferry, Cruiser, or Ebulient. Note that spelling mistakes may effect your grade!
     bool isDestroyed() const; // Returns true if the ship is destroyed, false otherwise
-private:
+protected:
+    string type;
+    int cost;
     int weight;
+    int energy;
+};
+
+class ColonyShip : public Ship {
+public:
+    ColonyShip(const string type);
+
+    static bool isSupported(string type);
+    int getColonistCount() const; // Returns nr of colonists of a ship
+    void infect(); // Infects a colony ship
+    bool isInfected() const; // Returns True if the ship is infected with a disease, False otherwise
+};
+
+class SolarSailShip : public Ship {
+public:
+    SolarSailShip(const string type);
+    static bool isSupported(string type);
+    int getEnergyProduction() const; // Returns energy production of Solar Sail Ship
+};
+
+class MilitaryEscortShip : public Ship {
+public:
+    MilitaryEscortShip(const string type);
+    static bool isSupported(string type);
+    int getNrProtected() const;   // Returns nr of colony ships protected by this ship
 };
 
 class Fleet {
 public:
+    // It does what it says
+    static Fleet *createFleetFromFile(string);
+
     int getWeight() const; // Returns cumulative weight of fleet
     int getEnergyConsumption() const; // Returns cumulative energy consumption of fleet
     int getColonistCount() const; // Returns cumulative colonist count of fleet
@@ -27,32 +59,25 @@ public:
     int countProtectedShips() const; // Returns nr of colony ships protected in fleet
     bool hasMedic() const; // Returns True if the fleet has a medic ship, false otherwise
     string getCorporationName() const; // Returns your chosen name of your corporation.
-    vector<Ship *> protectedShips() const;
-
-    // Returns a vector with ship numbers of protected colony ships
+    vector<Ship *> protectedShips() const;// Returns a vector with ship numbers of protected colony ships
     vector<Ship *> unprotectedShips() const; // Returns a vector with ship numbers of unprotected colony ships
     vector<Ship *> colonyShips() const; // Returns a vector with ship numbers of all ships that are a colony ship
     vector<Ship *> shipList() const; // Returns a vector with all ships in the fleet
     void destroyShip(Ship *i); // Removes ship i from the fleet
+    void addColonyShip(Ship *i);
+    void addMilitaryShip(Ship *i);
+    void addSolarSailShip(Ship *i);
+    static bool compareColonist(Ship* lhs, Ship* rhs); // compare the colonist count between colony ships
 private:
     vector<Ship *> otherShips;
-};
+    vector<MilitaryEscortShip *> militaryShips;
+    vector<ColonyShip *> colonyShipList;
+    vector<SolarSailShip *> solarsailShip;
 
-class ColonyShip : public Ship {
-public:
-    int getColonistCount() const; // Returns nr of colonists of a ship
-    void infect(); // Infects a colony ship
-    bool isInfected() const; // Returns True if the ship is infected with a disease, False otherwise
-};
+    void addOtherShip(Ship *ship);
+    string corporationName;
 
-class SolarSailShip : public Ship {
-public:
-    int getEnergyProduction() const; // Returns energy production of Solar Sail Ship
-};
 
-class MilitaryEscortShip : public Ship {
-public:
-    int getNrProtected() const;   // Returns nr of colony ships protected by this ship
 };
 
 Fleet *userInterfaceCreateFleet();
