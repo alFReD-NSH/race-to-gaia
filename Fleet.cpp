@@ -1,18 +1,25 @@
 #include <vector>
 #include <iostream>
+#include <fstream>
+#include <stdexcept>
 #include "Fleet.h"
 
 using namespace std;
 
 int main() {
-    Fleet fleet;
-    ColonyShip* ship = new ColonyShip();
-    fleet.addShip(ship);
-    fleet.addShip(new ColonyShip);
-
-    fleet.destroyShip(ship);
-    cout << fleet.colonyShips().size();
-
+    vector<Fleet*> fleets;
+    bool finished = true;
+    do {
+        try {
+            Fleet* fleet = userInterfaceCreateFleet();
+            finished = fleet == nullptr;
+            fleets.push_back(fleet);
+        } catch (invalid_argument e) {
+            cout << "There was a problem: " << e.what() << endl;
+            cout << "Try again.";
+            finished = false;
+        }
+    } while (!finished);
     return 0;
 }
 
@@ -34,6 +41,10 @@ string Ship::getTypeName() const {
 
 bool Ship::isDestroyed() const {
     return false;
+}
+
+bool Ship::isSupported(string type) {
+    return type == "Medic";
 }
 
 
@@ -149,12 +160,55 @@ void Fleet::destroyShip(Ship *i) {
     for (auto it = colonyShipList.begin(); it != colonyShipList.end(); it++) {
         if (*it == i) {
             colonyShipList.erase(it);
+            return;
         }
     }
 }
 
-void Fleet::addShip(Ship *i) {
+void Fleet::addColonyShip(Ship *i) {
     colonyShipList.push_back((ColonyShip*) i);
+}
+
+Fleet *Fleet::createFleetFromFile(string file) {
+    Fleet* fleet = new Fleet;
+    ifstream infile(file);
+    string shipType;
+    int number;
+    bool foundSomething = false;
+    while (infile >> shipType >> number) {
+        for (int i = 0; i < number; i++) {
+            foundSomething = true;
+            if (MilitaryEscortShip::isSupported(shipType)) {
+                fleet->addColonyShip(new MilitaryEscortShip(shipType));
+            } else if (SolarSailShip::isSupported(shipType)) {
+                fleet->addSolarSailShip(new SolarSailShip(shipType));
+            } else if (ColonyShip::isSupported(shipType)) {
+                fleet->addColonyShip(new SolarSailShip(shipType));
+            } else if (Ship::isSupported(shipType)) {
+                fleet->addOtherShip(new Ship(shipType));
+            } else {
+                delete fleet;
+                throw invalid_argument("Unknown ship.");
+            }
+        }
+    }
+    if (!foundSomething) {
+        delete fleet;
+        throw invalid_argument("Couldn't read the file or it was empty.");
+    }
+    return fleet;
+}
+
+void Fleet::addMilitaryShip(Ship *i) {
+    militaryShips.push_back((MilitaryEscortShip*) i);
+}
+
+void Fleet::addSolarSailShip(Ship *i) {
+    solarsailShip.push_back((SolarSailShip*) i);
+}
+
+void Fleet::addOtherShip(Ship *i) {
+    otherShips.push_back(i);
 }
 
 
@@ -170,9 +224,30 @@ bool ColonyShip::isInfected() const {
     return false;
 }
 
+bool ColonyShip::isSupported(string type) {
+    return type == "Ferry" || type == "Liner" || type == "Cloud";
+}
+
+ColonyShip::ColonyShip(const string type) : Ship(type) {
+    if (type == "Ferry") {
+        weight = 500;
+        energy = 5;
+        cost = 500;
+    }
+}
+
 
 int SolarSailShip::getEnergyProduction() const {
     return 0;
+}
+
+bool SolarSailShip::isSupported(string type) {
+    return false;
+}
+
+
+SolarSailShip::SolarSailShip(const string type) : Ship(type) {
+
 }
 
 
@@ -180,8 +255,25 @@ int MilitaryEscortShip::getNrProtected() const {
     return 0;
 }
 
-
-Fleet *userInterfaceCreateFleet() {
-    return nullptr;
+bool MilitaryEscortShip::isSupported(string type) {
+    return false;
 }
 
+MilitaryEscortShip::MilitaryEscortShip(const string type) : Ship(type) {
+
+}
+
+
+Fleet *userInterfaceCreateFleet() {
+    cout << "Please enter the file name or type stop: ";
+    string name;
+    cin >> name;
+    if (name == "stop") {
+        return nullptr;
+    }
+    return Fleet::createFleetFromFile(name);
+}
+
+Ship *addShipByType(string name) {
+
+}
