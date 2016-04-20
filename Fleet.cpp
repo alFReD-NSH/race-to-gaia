@@ -125,7 +125,7 @@ vector<Ship *> Fleet::protectedShips() const {
 
     int shipsCount = countProtectedShips();
 
-    sort(colony.begin(),colony.end(),compareColonist);
+    sort(colony.begin(),colony.end(),Fleet::compareColonist);
 
     return vector<Ship *>(colony.begin(), colony.begin() + shipsCount);
 }
@@ -135,7 +135,7 @@ vector<Ship *> Fleet::unprotectedShips() const {
 
     int shipsCount = countProtectedShips();
 
-    sort(colony.begin(),colony.end(),compareColonist);
+    sort(colony.begin(),colony.end(),Fleet::compareColonist);
 
     return vector<Ship *>(colony.begin() + shipsCount, colony.end());
 }
@@ -223,8 +223,9 @@ void Fleet::addOtherShip(Ship *i) {
     otherShips.push_back(i);
 }
 
-bool Fleet::compareColonist(ColonyShip lhs, ColonyShip rhs) {
-    return (lhs.getColonistCount()<rhs.getColonistCount());
+bool Fleet::compareColonist(Ship* lhs, Ship* rhs) {
+    return static_cast<ColonyShip*>(lhs)->getColonistCount() <
+            static_cast<ColonyShip*>(rhs)->getColonistCount();
 }
 
 

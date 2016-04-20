@@ -67,7 +67,7 @@ public:
     void addColonyShip(Ship *i);
     void addMilitaryShip(Ship *i);
     void addSolarSailShip(Ship *i);
-    bool compareColonist(ColonyShip lhs, ColonyShip rhs); // compare the colonist count between colony ships
+    static bool compareColonist(Ship* lhs, Ship* rhs); // compare the colonist count between colony ships
 private:
     vector<Ship *> otherShips;
     vector<MilitaryEscortShip *> militaryShips;
