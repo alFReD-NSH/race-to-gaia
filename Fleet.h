@@ -48,8 +48,11 @@ public:
     MilitaryEscortShip(const string type);
     static bool isSupported(string type);
     int getNrProtected() const;   // Returns nr of colony ships protected by this ship
+    int getFighters() const; // Returns number of fighters in a military ship
 private:
     int fighters;
+    int sumShipsProtected;
+
 };
 
 class Fleet {
@@ -57,6 +60,7 @@ public:
     // It does what it says
     static Fleet *createFleetFromFile(string);
 
+    int getFighters() const; //Return cumulative fighters in a a fleet
     int getWeight() const; // Returns cumulative weight of fleet
     int getEnergyConsumption() const; // Returns cumulative energy consumption of fleet
     int getColonistCount() const; // Returns cumulative colonist count of fleet
@@ -77,6 +81,7 @@ public:
 private:
     vector<Ship *> otherShips;
     vector<MilitaryEscortShip *> militaryShips;
+    vector<MilitaryEscortShip *> fighters;
     vector<ColonyShip *> colonyShipList;
     vector<SolarSailShip *> solarsailShip;
 

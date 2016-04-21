@@ -276,7 +276,7 @@ int SolarSailShip::getEnergyProduction() const {
 }
 
 bool SolarSailShip::isSupported(string type) {
-    return false;
+    return type == "Radiant" || type == "Ebulient";
 }
 
 
@@ -296,14 +296,25 @@ SolarSailShip::SolarSailShip(const string type) : Ship(type) {
     }
 }
 
+int MilitaryEscortShip::getFighters() const {
+    return fighters;
+}
+
+int Fleet::getFighters() const {
+    int totalFighters = 0;
+    vector<MilitaryEscortShip *> fighters;
+    for(int i=0; i<militaryShips.size(); i++){
+        totalFighters += militaryShips[i]->getFighters();
+    }
+    return totalFighters;
+}
 
 int MilitaryEscortShip::getNrProtected() const {
-
-
+    return 0;
 }
 
 bool MilitaryEscortShip::isSupported(string type) {
-    return false;
+    return type == "Cruiser" || type == "Frigate" || type == "Destroyer";
 }
 
 MilitaryEscortShip::MilitaryEscortShip(const string type) : Ship(type) {
