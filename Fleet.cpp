@@ -143,7 +143,7 @@ vector<Ship *> Fleet::unprotectedShips() const {
 
 vector<Ship *> Fleet::colonyShips() const {
     vector<Ship* > list;
-    vector<ColonyShip* > allShip = colonyShipList;
+vector<ColonyShip* > allShip = colonyShipList;
 
     string temp ="";
     for(int i=0;i<allShip.size();i++){
@@ -272,7 +272,7 @@ ColonyShip::ColonyShip(const string type) : Ship(type) {
 
 
 int SolarSailShip::getEnergyProduction() const {
-    return 0;
+    return energyGenerated;
 }
 
 bool SolarSailShip::isSupported(string type) {
@@ -281,12 +281,25 @@ bool SolarSailShip::isSupported(string type) {
 
 
 SolarSailShip::SolarSailShip(const string type) : Ship(type) {
+    if (type == "Radiant") {
+        weight = 3;
+        energy = 5;
+        cost = 50;
+        energyGenerated = 50;
+    }
 
+    else if (type == "Ebulient") {
+        weight = 50;
+        energy = 5;
+        cost = 250;
+        energyGenerated = 500;
+    }
 }
 
 
 int MilitaryEscortShip::getNrProtected() const {
-    return 0;
+
+
 }
 
 bool MilitaryEscortShip::isSupported(string type) {
@@ -294,7 +307,26 @@ bool MilitaryEscortShip::isSupported(string type) {
 }
 
 MilitaryEscortShip::MilitaryEscortShip(const string type) : Ship(type) {
+    if (type == "Cruiser") {
+        weight = 2;
+        energy = 10;
+        cost = 300;
+        fighters = 0;
+    }
 
+    else if (type == "Frigate") {
+        weight = 7;
+        energy = 20;
+        cost = 1000;
+        fighters = 10;
+    }
+
+    else if (type == "Destroyer") {
+        weight = 19;
+        energy = 30;
+        cost = 2000;
+        fighters = 25;
+    }
 }
 
 

@@ -48,6 +48,8 @@ public:
     MilitaryEscortShip(const string type);
     static bool isSupported(string type);
     int getNrProtected() const;   // Returns nr of colony ships protected by this ship
+private:
+    int fighters;
 };
 
 class Fleet {
