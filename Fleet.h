@@ -8,7 +8,7 @@ using namespace std;
 
 class Ship {
 public:
-    Ship(const string type) : type(type) { }
+    Ship(const string type);
     static bool isSupported(string type);
     int getEnergyConsumption() const; // Returns energy consumption of a ship
     int getWeight() const; // Returns weight of a ship
@@ -21,6 +21,7 @@ protected:
     int weight; // Weight of ship
     int energy; // Energy consumption of a ship
 };
+
 
 class ColonyShip : public Ship {
 public:
@@ -60,7 +61,6 @@ const long lightSpeed = 299792458;
 const long lightYearInMeters = 946073047258800;
 const long distanceToGaiaInMeters = lightYearInMeters * distanceToGaiaInLightYears;
 const int yearsPerTick = 3; // Amount of game-time that is supposed to be simulated between each tick
-const int tickSleeping = 1000; // Amount of time the threads sleep between each tick
 
 class Fleet {
 public:

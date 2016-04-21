@@ -22,18 +22,29 @@ int main() {
     for (auto i = fleets.begin(); i != fleets.end(); i++) {
         threads.push_back(new thread(Fleet::simulate, *i));
     }
+    if (fleets.size() == 0) {
+        cout << "No fleets. No winner";
+        return 0;
+    }
     while (true) {
-        if (currentGaiaColonist == nullptr) {
-            continue;
-        }
+        bool hasAlive = false;
         for (auto i = fleets.begin(); i != fleets.end(); i++) {
-            if (!(*i)->isKilled() && *i != currentGaiaColonist) {
-                continue;
+            if (!(*i)->isKilled()) {
+                hasAlive = true;
+                if (*i != currentGaiaColonist) {
+                    continue;
+                }
             }
         }
-        ostringstream reason;
-        cout << currentGaiaColonist->getCorporationName() + " is the winner";
-        return 0;
+        if (!hasAlive) {
+            cout << "No fleet alive. No winner";
+            return 0;
+        }
+        if (currentGaiaColonist != nullptr) {
+            cout << currentGaiaColonist->getCorporationName() + " is the winner";
+            return 0;
+        }
+        sleep();
     }
 }
 
@@ -44,7 +55,9 @@ vector<Fleet*> readFleets() {
         try {
             Fleet* fleet = userInterfaceCreateFleet();
             finished = fleet == nullptr;
-            fleets.push_back(fleet);
+            if (!finished) {
+                fleets.push_back(fleet);
+            }
         } catch (invalid_argument e) {
             cout << "There was a problem: " << e.what() << endl;
             cout << "Try again.";
@@ -110,6 +123,7 @@ int Fleet::getCost() const {
     int totalcost = 0;
     vector<Ship *> ships = shipList();
     for(int i=0; i<ships.size(); i++){
+        cout << ships[i]->getCost() << "\n";
         totalcost += ships[i]->getCost();
     }
     return totalcost;
@@ -226,7 +240,7 @@ Fleet *Fleet::createFleetFromFile(string file) {
             } else if (SolarSailShip::isSupported(shipType)) {
                 fleet->addSolarSailShip(new SolarSailShip(shipType));
             } else if (ColonyShip::isSupported(shipType)) {
-                fleet->addColonyShip(new SolarSailShip(shipType));
+                fleet->addColonyShip(new ColonyShip(shipType));
             } else if (Ship::isSupported(shipType)) {
                 fleet->addOtherShip(new Ship(shipType));
             } else {
@@ -272,6 +286,9 @@ void Fleet::simulate(Fleet *fleet) {
         ostringstream text;
         text << fleet->corporationName;
         if (fleet->getEnergyConsumption() > fleet->EnergyProduction()) {
+            text << " doesn't have enough energy production.";
+            text << endl;
+            cout << text.str();
             fleet->kill();
         }
         if (fleet->killed) {
@@ -304,7 +321,7 @@ void Fleet::simulate(Fleet *fleet) {
             fleet->alienAttack();
             fleet->infect();
         }
-        sleep(tickSleeping);
+        sleep();
     }
 }
 
@@ -449,12 +466,14 @@ Fleet *userInterfaceCreateFleet() {
     return Fleet::createFleetFromFile(name);
 }
 
+Ship::Ship(const string type) : type(type) {
+    if (type == "Medic") {
+        cost = 1000;
+        weight = 1;
+        energy = 1;
+    }
+}
 
-void sleep(int milliseconds) { // cross-platform sleep function
-    // Taken from http://stackoverflow.com/a/23450965/774086
-#ifdef WIN32
-    Sleep(milliseconds);
-#else
-    usleep(milliseconds * 1000);
-#endif // win32
+void sleep() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
