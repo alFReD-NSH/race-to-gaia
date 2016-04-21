@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include "Fleet.h"
+#include <time.h>
 
 using namespace std;
 
@@ -25,19 +26,19 @@ int main() {
 }
 
 int Ship::getEnergyConsumption() const {
-    return 0;
+    return energy;
 }
 
 int Ship::getWeight() const {
-    return 0;
+    return weight;
 }
 
 int Ship::getCost() const {
-    return 0;
+    return cost;
 }
 
 string Ship::getTypeName() const {
-    return std::basic_string<char, char_traits<char>, allocator<char>>();
+    return type;
 }
 
 bool Ship::isDestroyed() const {
@@ -230,15 +231,16 @@ bool Fleet::compareColonist(Ship* lhs, Ship* rhs) {
 
 
 int ColonyShip::getColonistCount() const {
-    return 0;
+    return colonists;
 }
 
 void ColonyShip::infect() {
+    colonists = 0;
 
 }
 
 bool ColonyShip::isInfected() const {
-    return false;
+    return colonists == 0;
 }
 
 bool ColonyShip::isSupported(string type) {
@@ -247,9 +249,24 @@ bool ColonyShip::isSupported(string type) {
 
 ColonyShip::ColonyShip(const string type) : Ship(type) {
     if (type == "Ferry") {
-        weight = 500;
+        weight = 10;
         energy = 5;
         cost = 500;
+        colonists = 100;
+    }
+
+    else if (type == "Liner") {
+        weight = 20;
+        energy = 7;
+        cost = 1000;
+        colonists = 250;
+    }
+
+    else if (type == "Cloud") {
+        weight = 30;
+        energy = 9;
+        cost = 2000;
+        colonists = 750;
     }
 }
 

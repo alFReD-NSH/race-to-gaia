@@ -16,10 +16,10 @@ public:
     string getTypeName() const; // Returns the ship type, e.g. Ferry, Cruiser, or Ebulient. Note that spelling mistakes may effect your grade!
     bool isDestroyed() const; // Returns true if the ship is destroyed, false otherwise
 protected:
-    string type;
-    int cost;
-    int weight;
-    int energy;
+    string type; // Type of ship
+    int cost;  // Cost of ship
+    int weight; // Weight of ship
+    int energy; // Energy consumption of a ship
 };
 
 class ColonyShip : public Ship {
@@ -30,6 +30,8 @@ public:
     int getColonistCount() const; // Returns nr of colonists of a ship
     void infect(); // Infects a colony ship
     bool isInfected() const; // Returns True if the ship is infected with a disease, False otherwise
+private:
+    int colonists; // Number of colonists in a colony ship
 };
 
 class SolarSailShip : public Ship {
@@ -37,6 +39,8 @@ public:
     SolarSailShip(const string type);
     static bool isSupported(string type);
     int getEnergyProduction() const; // Returns energy production of Solar Sail Ship
+private:
+    int energyGenerated;
 };
 
 class MilitaryEscortShip : public Ship {
