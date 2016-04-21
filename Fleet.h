@@ -102,7 +102,7 @@ private:
     double getSpeedPerTick();
     string corporationName;
     long distanceLeft = distanceToGaiaInMeters;
-    float settledPopulation = 0;
+    int settledPopulation = 0;
 
     void kill();
 
@@ -114,5 +114,6 @@ private:
 Fleet *userInterfaceCreateFleet();
 vector<Fleet*> readFleets();
 Fleet* currentGaiaColonist = nullptr;
+void sleepOneSecond();
 
 #endif //RACE_TO_GAIA_FLEET_H

@@ -28,10 +28,12 @@ int main() {
     }
     while (true) {
         bool hasAlive = false;
+        bool cont = false;
         for (auto i = fleets.begin(); i != fleets.end(); i++) {
             if (!(*i)->isKilled()) {
                 hasAlive = true;
                 if (*i != currentGaiaColonist) {
+                    cont = true;
                     continue;
                 }
             }
@@ -40,11 +42,11 @@ int main() {
             cout << "No fleet alive. No winner";
             return 0;
         }
-        if (currentGaiaColonist != nullptr) {
+        if (currentGaiaColonist != nullptr && !cont) {
             cout << currentGaiaColonist->getCorporationName() + " is the winner";
             return 0;
         }
-        sleep();
+        sleepOneSecond();
     }
 }
 
@@ -123,7 +125,6 @@ int Fleet::getCost() const {
     int totalcost = 0;
     vector<Ship *> ships = shipList();
     for(int i=0; i<ships.size(); i++){
-        cout << ships[i]->getCost() << "\n";
         totalcost += ships[i]->getCost();
     }
     return totalcost;
@@ -131,9 +132,9 @@ int Fleet::getCost() const {
 
 int Fleet::EnergyProduction() const {
     int totalenergy = 0;
-    vector<Ship*> ships = shipList();
+    vector<SolarSailShip*> ships = solarsailShip;
     for(int i=0; i<ships.size(); i++){
-        totalenergy += ships[i]->getEnergyConsumption();
+        totalenergy += ships[i]->getEnergyProduction();
     }
     return totalenergy;
 }
@@ -204,6 +205,14 @@ vector<Ship *> Fleet::shipList() const {
     for (int i = 0; i < colonies.size(); i++) {
         list.push_back(colonies[i]);
     }
+    vector<SolarSailShip *> ships = solarsailShip;
+    for (int i = 0; i < ships.size(); i++) {
+        list.push_back(ships[i]);
+    }
+    vector<MilitaryEscortShip *> mili = militaryShips;
+    for (int i = 0; i < mili.size(); i++) {
+        list.push_back(mili[i]);
+    }
     vector<Ship *> others = otherShips;
     for (int i = 0; i < others.size(); i++) {
         list.push_back(others[i]);
@@ -255,6 +264,7 @@ Fleet *Fleet::createFleetFromFile(string file) {
     }
 
     auto totalCost = fleet->getCost();
+    cout << "Tptal cost is " << totalCost << endl;
     if (totalCost > maxCost) {
         ostringstream reason;
         reason << "The total fleet cost " << totalCost << " exceeded " << maxCost << " UNP";
@@ -281,6 +291,7 @@ bool Fleet::compareColonist(Ship* lhs, Ship* rhs) {
 }
 
 void Fleet::simulate(Fleet *fleet) {
+    bool attacked = false;
     while (true) {
         // We use ostringstream, so we can build the string before hand and then print out at once, so we won't have problem sharing the cout with other threads
         ostringstream text;
@@ -294,34 +305,40 @@ void Fleet::simulate(Fleet *fleet) {
         if (fleet->killed) {
             return;
         } else if (fleet->distanceLeft == 0) {
-            fleet->settledPopulation += round(fleet->settledPopulation * 1.05);
+            fleet->settledPopulation = round(fleet->settledPopulation * 1.05);
             text << " has population of " << fleet->settledPopulation << ".";
         } else if (fleet->distanceLeft < fleet->getSpeedPerTick()) {
             fleet->distanceLeft = 0;
             text << " has reached gaia.";
+            fleet->settledPopulation = fleet->getColonistCount();
             if (currentGaiaColonist == nullptr) {
                 currentGaiaColonist = fleet;
             } else if (currentGaiaColonist->getColonistCount() < fleet->getColonistCount()){
+                text << " fleet " << currentGaiaColonist->corporationName << " was killed as it had lesser population in gaia.";
                 currentGaiaColonist->kill();
                 currentGaiaColonist = fleet;
-                text << " Fleet " << fleet->corporationName << " was killed as it had lesser population in gaia.";
             } else {
                 fleet->kill();
-                text << " but Fleet " << fleet->corporationName << " has more population.";
+                text << " but fleet " << currentGaiaColonist->corporationName << " has more population.";
             }
         } else {
             fleet->distanceLeft -= fleet->getSpeedPerTick();
-            text << " is now at a distance of " << fleet->distanceLeft << " years.";
+            text << " is now at a distance of " << (fleet->distanceLeft / 31556952) << " years.";
         }
 
         text << endl;
         cout << text.str();
 
-        if (fleet->distanceLeft < (distanceToGaiaInMeters / 2)) {
+        if (!attacked && fleet->distanceLeft < (distanceToGaiaInMeters / 2)) {
+            attacked = true;
+            cout << "Alien attack on " + fleet->corporationName + "\n";
             fleet->alienAttack();
             fleet->infect();
+            ostringstream text;
+            text << fleet->corporationName << " has population of " << fleet->settledPopulation;
         }
-        sleep();
+
+        sleepOneSecond();
     }
 }
 
@@ -330,12 +347,16 @@ void Fleet::kill() {
 }
 
 void Fleet::alienAttack() {
-    vector<ColonyShip*> colonies = colonyShipList;
+    vector<Ship*> colonies = unprotectedShips();
     int counter = 0;
-    double randomValue = ceil(0.25 * colonyShipList.size());
+    int size = colonies.size();
+    if (size == 0) {
+        return;
+    }
+    double randomValue = ceil(0.25 * size);
 
     while(counter != randomValue){
-        int temp = colonyShipList.size();
+        int temp = colonies.size();
         int random = rand() % temp;
         this->destroyShip(colonies[random]);
         counter++;
@@ -346,6 +367,9 @@ void Fleet::infect() {
     vector<ColonyShip*> colonies = colonyShipList;
 
     int temp = colonyShipList.size();
+    if (temp == 0) {
+        return;
+    }
     int random = rand() % temp;
 
     if (!hasMedic()){
@@ -362,7 +386,7 @@ double Fleet::getSpeedPerTick() {
     double weight = getWeight();
 
     speed = (lightSpeed*10)/sqrt(weight);
-    speed = speed/31556952;
+    speed = speed * 31556952;
     speed = speed / yearsPerTick;
     return speed;
 }
@@ -496,6 +520,6 @@ Ship::Ship(const string type) : type(type) {
     }
 }
 
-void sleep() {
+void sleepOneSecond() {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
