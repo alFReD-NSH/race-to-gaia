@@ -55,10 +55,19 @@ private:
 
 };
 
+const int distanceToGaiaInLightYears = 33;
+const long lightSpeed = 299792458;
+const long lightYearInMeters = 946073047258800;
+const long distanceToGaiaInMeters = lightYearInMeters * distanceToGaiaInLightYears;
+const int yearsPerTick = 3; // Amount of game-time that is supposed to be simulated between each tick
+const int tickSleeping = 1000; // Amount of time the threads sleep between each tick
+
 class Fleet {
 public:
     // It does what it says
     static Fleet *createFleetFromFile(string);
+    static bool compareColonist(Ship* lhs, Ship* rhs); // compare the colonist count between colony ships
+    static void simulate(Fleet *fleet);
 
     int getFighters() const; //Return cumulative fighters in a a fleet
     int getWeight() const; // Returns cumulative weight of fleet
@@ -77,7 +86,7 @@ public:
     void addColonyShip(Ship *i);
     void addMilitaryShip(Ship *i);
     void addSolarSailShip(Ship *i);
-    static bool compareColonist(Ship* lhs, Ship* rhs); // compare the colonist count between colony ships
+    bool isKilled();
 private:
     vector<Ship *> otherShips;
     vector<MilitaryEscortShip *> militaryShips;
@@ -85,12 +94,22 @@ private:
     vector<ColonyShip *> colonyShipList;
     vector<SolarSailShip *> solarsailShip;
 
+    bool killed = false;
     void addOtherShip(Ship *ship);
+    double getSpeedPerTick();
     string corporationName;
+    long distanceLeft = distanceToGaiaInMeters;
+    float settledPopulation = 0;
 
+    void kill();
 
+    void alienAttack();
+
+    void infect();
 };
 
 Fleet *userInterfaceCreateFleet();
+vector<Fleet*> readFleets();
+Fleet* currentGaiaColonist = nullptr;
 
 #endif //RACE_TO_GAIA_FLEET_H

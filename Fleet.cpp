@@ -4,11 +4,40 @@
 #include <stdexcept>
 #include <algorithm>
 #include "Fleet.h"
-#include <time.h>
+#include <sstream>
+#include <thread>
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif // win32
 
 using namespace std;
 
+const int maxCost = 10000; // UNP
+
 int main() {
+    vector<Fleet*> fleets = readFleets();
+    vector<thread*> threads;
+    for (auto i = fleets.begin(); i != fleets.end(); i++) {
+        threads.push_back(new thread(Fleet::simulate, *i));
+    }
+    while (true) {
+        if (currentGaiaColonist == nullptr) {
+            continue;
+        }
+        for (auto i = fleets.begin(); i != fleets.end(); i++) {
+            if (!(*i)->isKilled() && *i != currentGaiaColonist) {
+                continue;
+            }
+        }
+        ostringstream reason;
+        cout << currentGaiaColonist->getCorporationName() + " is the winner";
+        return 0;
+    }
+}
+
+vector<Fleet*> readFleets() {
     vector<Fleet*> fleets;
     bool finished = true;
     do {
@@ -22,7 +51,7 @@ int main() {
             finished = false;
         }
     } while (!finished);
-    return 0;
+    return fleets;
 }
 
 int Ship::getEnergyConsumption() const {
@@ -184,6 +213,7 @@ void Fleet::addColonyShip(Ship *i) {
 
 Fleet *Fleet::createFleetFromFile(string file) {
     Fleet* fleet = new Fleet;
+    fleet->corporationName = file;
     ifstream infile(file);
     string shipType;
     int number;
@@ -209,6 +239,13 @@ Fleet *Fleet::createFleetFromFile(string file) {
         delete fleet;
         throw invalid_argument("Couldn't read the file or it was empty.");
     }
+
+    auto totalCost = fleet->getCost();
+    if (totalCost > maxCost) {
+        ostringstream reason;
+        reason << "The total fleet cost " << totalCost << " exceeded " << maxCost << " UNP";
+        throw invalid_argument(reason.str());
+    }
     return fleet;
 }
 
@@ -227,6 +264,68 @@ void Fleet::addOtherShip(Ship *i) {
 bool Fleet::compareColonist(Ship* lhs, Ship* rhs) {
     return static_cast<ColonyShip*>(lhs)->getColonistCount() <
             static_cast<ColonyShip*>(rhs)->getColonistCount();
+}
+
+void Fleet::simulate(Fleet *fleet) {
+    while (true) {
+        // We use ostringstream, so we can build the string before hand and then print out at once, so we won't have problem sharing the cout with other threads
+        ostringstream text;
+        text << fleet->corporationName;
+        if (fleet->getEnergyConsumption() > fleet->EnergyProduction()) {
+            fleet->kill();
+        }
+        if (fleet->killed) {
+            return;
+        } else if (fleet->distanceLeft == 0) {
+            fleet->settledPopulation += round(fleet->settledPopulation * 1.05);
+            text << " has population of " << fleet->settledPopulation << ".";
+        } else if (fleet->distanceLeft < fleet->getSpeedPerTick()) {
+            fleet->distanceLeft = 0;
+            text << " has reached gaia.";
+            if (currentGaiaColonist == nullptr) {
+                currentGaiaColonist = fleet;
+            } else if (currentGaiaColonist->getColonistCount() < fleet->getColonistCount()){
+                currentGaiaColonist->kill();
+                currentGaiaColonist = fleet;
+                text << " Fleet " << fleet->corporationName << " was killed as it had lesser population in gaia.";
+            } else {
+                fleet->kill();
+                text << " but Fleet " << fleet->corporationName << " has more population.";
+            }
+        } else {
+            fleet->distanceLeft -= fleet->getSpeedPerTick();
+            text << " is now at a distance of " << fleet->distanceLeft << " years.";
+        }
+
+        text << endl;
+        cout << text.str();
+
+        if (fleet->distanceLeft < (distanceToGaiaInMeters / 2)) {
+            fleet->alienAttack();
+            fleet->infect();
+        }
+        sleep(tickSleeping);
+    }
+}
+
+void Fleet::kill() {
+    killed = true;
+}
+
+void Fleet::alienAttack() {
+
+}
+
+void Fleet::infect() {
+
+}
+
+bool Fleet::isKilled() {
+    return killed;
+}
+
+double Fleet::getSpeedPerTick() {
+    return 0;
 }
 
 
@@ -340,7 +439,6 @@ MilitaryEscortShip::MilitaryEscortShip(const string type) : Ship(type) {
     }
 }
 
-
 Fleet *userInterfaceCreateFleet() {
     cout << "Please enter the file name or type stop: ";
     string name;
@@ -351,6 +449,12 @@ Fleet *userInterfaceCreateFleet() {
     return Fleet::createFleetFromFile(name);
 }
 
-Ship *addShipByType(string name) {
 
+void sleep(int milliseconds) { // cross-platform sleep function
+    // Taken from http://stackoverflow.com/a/23450965/774086
+#ifdef WIN32
+    Sleep(milliseconds);
+#else
+    usleep(milliseconds * 1000);
+#endif // win32
 }
