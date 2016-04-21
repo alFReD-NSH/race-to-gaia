@@ -330,11 +330,27 @@ void Fleet::kill() {
 }
 
 void Fleet::alienAttack() {
+    vector<ColonyShip*> colonies = colonyShipList;
+    int counter = 0;
+    double randomValue = ceil(0.25 * colonyShipList.size());
 
+    while(counter != randomValue){
+        int temp = colonyShipList.size();
+        int random = rand() % temp;
+        this->destroyShip(colonies[random]);
+        counter++;
+    }
 }
 
 void Fleet::infect() {
+    vector<ColonyShip*> colonies = colonyShipList;
 
+    int temp = colonyShipList.size();
+    int random = rand() % temp;
+
+    if (!hasMedic()){
+        colonies[random]->infect();
+    }
 }
 
 bool Fleet::isKilled() {
@@ -342,7 +358,13 @@ bool Fleet::isKilled() {
 }
 
 double Fleet::getSpeedPerTick() {
-    return 0;
+    double speed;
+    double weight = getWeight();
+
+    speed = (lightSpeed*10)/sqrt(weight);
+    speed = speed/31556952;
+    speed = speed / yearsPerTick;
+    return speed;
 }
 
 
