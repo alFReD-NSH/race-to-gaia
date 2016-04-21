@@ -48,9 +48,10 @@ class MilitaryEscortShip : public Ship {
 public:
     MilitaryEscortShip(const string type);
     static bool isSupported(string type);
-    int getNrProtected() const;   // Returns nr of colony ships protected by this ship
+    int getNrProtected();   // Returns nr of colony ships protected by this ship
     int getFighters() const; // Returns number of fighters in a military ship
 private:
+    vector<MilitaryEscortShip *> militaryShips;
     int fighters;
     int sumShipsProtected;
 

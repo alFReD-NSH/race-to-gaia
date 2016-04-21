@@ -425,8 +425,8 @@ int Fleet::getFighters() const {
     return totalFighters;
 }
 
-int MilitaryEscortShip::getNrProtected() const {
-    return 0;
+int MilitaryEscortShip::getNrProtected() {
+    return (getFighters()/2) + 1;
 }
 
 bool MilitaryEscortShip::isSupported(string type) {
