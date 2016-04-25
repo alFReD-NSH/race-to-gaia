@@ -395,9 +395,10 @@ double Fleet::getSpeedPerTick() {
     double speed;
     double weight = getWeight();
 
-    speed = (lightSpeed*10)/sqrt(weight);
-    speed = speed * 31556952;
-    speed = speed / yearsPerTick;
+    speed = (double) lightSpeed * 10;
+    speed /= sqrt(weight);
+    speed *= 31556952;
+    speed /= yearsPerTick;
     return speed;
 }
 

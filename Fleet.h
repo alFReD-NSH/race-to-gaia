@@ -28,7 +28,6 @@ protected:
 class ColonyShip : public Ship {
 public:
     ColonyShip(const string type);
-
     static bool isSupported(string type);
     int getColonistCount() const; // Returns nr of colonists of a ship
     void infect(); // Infects a colony ship
@@ -61,8 +60,8 @@ private:
 
 const int distanceToGaiaInLightYears = 33;
 const long lightSpeed = 299792458;
-const long lightYearInMeters = 946073047258800;
-const long distanceToGaiaInMeters = lightYearInMeters * distanceToGaiaInLightYears;
+const long long lightYearInMeters = 946073047258800;
+const long long distanceToGaiaInMeters = lightYearInMeters * distanceToGaiaInLightYears;
 const int yearsPerTick = 3; // Amount of game-time that is supposed to be simulated between each tick
 
 class Fleet {
@@ -103,7 +102,7 @@ private:
     void addOtherShip(Ship *ship);
     double getSpeedPerTick();
     string corporationName;
-    long distanceLeft = distanceToGaiaInMeters;
+    long long distanceLeft = distanceToGaiaInMeters;
     int settledPopulation = 0;
 
     void kill();
