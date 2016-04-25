@@ -6,11 +6,6 @@
 #include "Fleet.h"
 #include <sstream>
 #include <thread>
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif // win32
 
 using namespace std;
 
@@ -18,12 +13,12 @@ const int maxCost = 10000; // UNP
 
 int main() {
     vector<Fleet*> fleets = readFleets();
-    vector<thread*> threads;
+    vector<thread> threads;
     for (auto i = fleets.begin(); i != fleets.end(); i++) {
-        threads.push_back(new thread(Fleet::simulate, *i));
+        threads.push_back(thread(Fleet::simulate, *i));
     }
     if (fleets.size() == 0) {
-        cout << "No fleets. No winner";
+        cout << "No fleets. No winner" << endl;
         return 0;
     }
     while (true) {
@@ -34,20 +29,28 @@ int main() {
                 hasAlive = true;
                 if (*i != currentGaiaColonist) {
                     cont = true;
-                    continue;
+                    break;
                 }
             }
         }
         if (!hasAlive) {
-            cout << "No fleet alive. No winner";
-            return 0;
+            cout << "No fleet alive. No winner" << endl;
+            break;
         }
         if (currentGaiaColonist != nullptr && !cont) {
-            cout << currentGaiaColonist->getCorporationName() + " is the winner";
-            return 0;
+            cout << currentGaiaColonist->getCorporationName() + " is the winner" << endl;
+            break;
         }
         sleepOneSecond();
     }
+
+
+    for (int i = 0; i < fleets.size(); i++) {
+        threads[i].detach();
+        delete fleets[i];
+    }
+
+    return 0;
 }
 
 vector<Fleet*> readFleets() {
@@ -169,6 +172,9 @@ vector<Ship *> Fleet::protectedShips() const {
     vector<Ship*> colony = colonyShips();
 
     int shipsCount = countProtectedShips();
+    if (shipsCount >= colony.size()) {
+        return colony;
+    }
 
     sort(colony.begin(),colony.end(),Fleet::compareColonist);
 
@@ -179,6 +185,9 @@ vector<Ship *> Fleet::unprotectedShips() const {
     vector<Ship*> colony = colonyShips();
 
     int shipsCount = countProtectedShips();
+    if (shipsCount >= colony.size()) {
+        return vector<Ship*>();
+    }
 
     sort(colony.begin(),colony.end(),Fleet::compareColonist);
 
@@ -187,7 +196,7 @@ vector<Ship *> Fleet::unprotectedShips() const {
 
 vector<Ship *> Fleet::colonyShips() const {
     vector<Ship* > list;
-vector<ColonyShip* > allShip = colonyShipList;
+    vector<ColonyShip* > allShip = colonyShipList;
 
     string temp ="";
     for(int i=0;i<allShip.size();i++){
@@ -201,7 +210,7 @@ vector<ColonyShip* > allShip = colonyShipList;
 
 vector<Ship *> Fleet::shipList() const {
     vector<Ship *> list;
-    vector<Ship *> colonies = colonyShips();
+    vector<ColonyShip*> colonies = colonyShipList;
     for (int i = 0; i < colonies.size(); i++) {
         list.push_back(colonies[i]);
     }
@@ -245,7 +254,7 @@ Fleet *Fleet::createFleetFromFile(string file) {
         for (int i = 0; i < number; i++) {
             foundSomething = true;
             if (MilitaryEscortShip::isSupported(shipType)) {
-                fleet->addColonyShip(new MilitaryEscortShip(shipType));
+                fleet->addMilitaryShip(new MilitaryEscortShip(shipType));
             } else if (SolarSailShip::isSupported(shipType)) {
                 fleet->addSolarSailShip(new SolarSailShip(shipType));
             } else if (ColonyShip::isSupported(shipType)) {
@@ -264,7 +273,7 @@ Fleet *Fleet::createFleetFromFile(string file) {
     }
 
     auto totalCost = fleet->getCost();
-    cout << "Tptal cost is " << totalCost << endl;
+    cout << "Total cost is " << totalCost << endl;
     if (totalCost > maxCost) {
         ostringstream reason;
         reason << "The total fleet cost " << totalCost << " exceeded " << maxCost << " UNP";
@@ -335,7 +344,8 @@ void Fleet::simulate(Fleet *fleet) {
             fleet->alienAttack();
             fleet->infect();
             ostringstream text;
-            text << fleet->corporationName << " has population of " << fleet->settledPopulation;
+            text << fleet->corporationName << " has population of " << fleet->getColonistCount();
+            cout << text.str() << endl;
         }
 
         sleepOneSecond();
@@ -349,15 +359,15 @@ void Fleet::kill() {
 void Fleet::alienAttack() {
     vector<Ship*> colonies = unprotectedShips();
     int counter = 0;
-    int size = colonies.size();
+    long size = colonies.size();
     if (size == 0) {
         return;
     }
     double randomValue = ceil(0.25 * size);
 
     while(counter != randomValue){
-        int temp = colonies.size();
-        int random = rand() % temp;
+        long temp = colonies.size();
+        long random = rand() % temp;
         this->destroyShip(colonies[random]);
         counter++;
     }
@@ -366,11 +376,11 @@ void Fleet::alienAttack() {
 void Fleet::infect() {
     vector<ColonyShip*> colonies = colonyShipList;
 
-    int temp = colonyShipList.size();
+    long temp = colonyShipList.size();
     if (temp == 0) {
         return;
     }
-    int random = rand() % temp;
+    long random = rand() % temp;
 
     if (!hasMedic()){
         colonies[random]->infect();
@@ -470,6 +480,14 @@ int Fleet::getFighters() const {
     }
     return totalFighters;
 }
+
+Fleet::~Fleet() {
+    vector<Ship*> ships = shipList();
+    for (auto i = ships.begin(); i != ships.end(); i++) {
+        delete *i;
+    }
+}
+
 
 int MilitaryEscortShip::getNrProtected() {
     return (getFighters()/2) + 1;

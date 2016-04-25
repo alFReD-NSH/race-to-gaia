@@ -72,6 +72,8 @@ public:
     static bool compareColonist(Ship* lhs, Ship* rhs); // compare the colonist count between colony ships
     static void simulate(Fleet *fleet);
 
+    ~Fleet();
+
     int getFighters() const; //Return cumulative fighters in a a fleet
     int getWeight() const; // Returns cumulative weight of fleet
     int getEnergyConsumption() const; // Returns cumulative energy consumption of fleet
